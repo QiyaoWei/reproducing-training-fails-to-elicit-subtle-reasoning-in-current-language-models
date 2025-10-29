@@ -9,6 +9,8 @@
 **/playground
 **/wandb
 plotting/
+archived_docs/
+verl_app-verl0.4-vllm0.8.5-mcore0.12.1.sif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
