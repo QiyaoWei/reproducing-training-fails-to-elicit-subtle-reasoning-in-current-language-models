@@ -1,0 +1,1 @@
+- Always save stuff in /scratch/gpfs/DANQIC/jz4391 and not any default places

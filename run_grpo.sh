@@ -6,7 +6,7 @@ set -x
 
 # Default values
 DEFAULT_DATASET="diamonds-seed0"
-DEFAULT_TOTAL_EPOCHS=10
+DEFAULT_TOTAL_EPOCHS=1
 DEFAULT_K=0.0
 DEFAULT_LR=5e-6
 DEFAULT_KL_COEF=0.0
@@ -231,6 +231,18 @@ export MONITOR_WRONG_REWARD
 export MONITOR_MODEL_NAME
 export REBALANCE_MONITOR_REWARD
 
+# When HF_HUB_OFFLINE=1, we must use local paths instead of HuggingFace model IDs
+# Check if we're in offline mode and set the model path accordingly
+if [ "$HF_HUB_OFFLINE" = "1" ]; then
+    # Use the local cached model path
+    MODEL_PATH="/scratch/gpfs/DANQIC/jz4391/.cache/huggingface/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562"
+    echo "Using local model path (offline mode): $MODEL_PATH"
+else
+    # Use HuggingFace model ID (requires internet)
+    MODEL_PATH="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    echo "Using HuggingFace model ID: $MODEL_PATH"
+fi
+
 # # Reduce logging verbosity
 # export PYTHONWARNINGS="ignore"
 # export TF_CPP_MIN_LOG_LEVEL=3
@@ -283,7 +295,7 @@ python3 -m verl.trainer.main_ppo \
     data.max_response_length=${MAX_RESPONSE_LENGTH} \
     data.filter_overlong_prompts=True \
     data.truncation='error' \
-    actor_rollout_ref.model.path=deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
+    actor_rollout_ref.model.path=${MODEL_PATH} \
     actor_rollout_ref.actor.optim.lr=${LEARNING_RATE} \
     actor_rollout_ref.model.use_remove_padding=True \
     actor_rollout_ref.actor.ppo_mini_batch_size=256 \
@@ -303,7 +315,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.temperature=1.0 \
     actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=32 \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
-    actor_rollout_ref.ref.model.path=deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
+    actor_rollout_ref.ref.model.path=${MODEL_PATH} \
     algorithm.use_kl_in_reward=False \
     trainer.critic_warmup=0 \
     trainer.logger='["console", "wandb"]' \
